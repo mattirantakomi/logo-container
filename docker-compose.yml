@@ -1,0 +1,23 @@
+services:
+  logo-soft:
+    build: .
+    image: ghcr.io/mattirantakomi/logo-container:latest
+    container_name: logo-soft-comfort
+    ports:
+      - "5901:5901"   # VNC
+      - "6080:6080"   # noVNC (browser)
+      - "14500:14500" # xpra (native window forwarding)
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    environment:
+      - VNC_RESOLUTION=1920x1080
+      # - XPRA_PORT=14500  # uncomment to override xpra port
+    volumes:
+      - ./workspace:/home/logo/workspace
+    shm_size: "2gb"
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    cap_add:
+      - SYS_ADMIN

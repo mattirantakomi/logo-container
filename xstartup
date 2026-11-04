@@ -1,0 +1,42 @@
+#!/bin/bash
+export DISPLAY=:1
+
+# Disable glycin sandbox (crashes in containers trying to use bwrap)
+export GLYCIN_SANDBOX=off
+
+LOGO_INSTALL_DIR=${LOGO_INSTALL_DIR:-/opt/LOGOSoftComfort}
+
+# Disable screensaver
+xset s off
+xset -dpms
+xset s noevent
+
+# Start dbus session (required for XFCE components)
+eval $(dbus-launch --sh-syntax)
+export DBUS_SESSION_BUS_ADDRESS
+
+# Start window manager
+xfwm4 --compositor=off &
+sleep 1
+
+# Start panel (taskbar with window list)
+xfce4-panel &
+sleep 1
+
+# Start desktop (shows icons)
+xfdesktop &
+sleep 2
+
+# Mark desktop shortcuts as trusted
+chmod +x /home/logo/Desktop/*.desktop 2>/dev/null
+gio set /home/logo/Desktop/LOGOSoftComfort.desktop metadata::trusted true 2>/dev/null || true
+
+# Launch LOGO! Soft Comfort
+LOGO_LAUNCHER=$(find "$LOGO_INSTALL_DIR" -type f -name 'LOGOComfort' 2>/dev/null | head -n1)
+if [ -n "$LOGO_LAUNCHER" ]; then
+    chmod +x "$LOGO_LAUNCHER" 2>/dev/null || true
+    "$LOGO_LAUNCHER" > /tmp/logo.log 2>&1 &
+fi
+
+# Keep alive
+while true; do sleep 60; done
