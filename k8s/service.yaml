@@ -1,0 +1,23 @@
+# Internal ClusterIP service exposing all three access methods inside the
+# cluster. Use this for port-forwarding or for wiring up ingress/Tailscale.
+apiVersion: v1
+kind: Service
+metadata:
+  name: logo-soft
+  namespace: logo-soft
+  labels:
+    app.kubernetes.io/name: logo-soft-comfort
+spec:
+  type: ClusterIP
+  selector:
+    app: logo-soft
+  ports:
+    - name: novnc
+      port: 6080
+      targetPort: 6080
+    - name: vnc
+      port: 5901
+      targetPort: 5901
+    - name: xpra
+      port: 14500
+      targetPort: 14500

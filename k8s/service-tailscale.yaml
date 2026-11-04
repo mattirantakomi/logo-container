@@ -1,0 +1,29 @@
+# Exposes the noVNC browser interface (port 6080) onto your tailnet via the
+# Tailscale Kubernetes Operator. Once applied, the operator provisions a
+# Tailscale node and the desktop becomes reachable at:
+#
+#     http://logo-soft:6080        (MagicDNS short name)
+#     http://logo-soft.<tailnet>.ts.net:6080
+#
+# Requires the Tailscale operator to be installed in the cluster. If you instead
+# run a subnet router or a Tailscale sidecar, delete this file and reach the
+# ClusterIP service (service.yaml) over your existing tailnet routing, or use
+# `kubectl port-forward` (see k8s/README.md).
+apiVersion: v1
+kind: Service
+metadata:
+  name: logo-soft-ts
+  namespace: logo-soft
+  labels:
+    app.kubernetes.io/name: logo-soft-comfort
+  annotations:
+    tailscale.com/hostname: "logo-soft"
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app: logo-soft
+  ports:
+    - name: novnc
+      port: 6080
+      targetPort: 6080

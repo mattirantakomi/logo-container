@@ -1,0 +1,7 @@
+workspace/
+.kiro/
+.vscode/
+
+# Siemens LOGO! Soft Comfort installer (~1 GB, exceeds GitHub's file limit).
+# Obtain it from Siemens and place it here before building the image.
+Setup.bin

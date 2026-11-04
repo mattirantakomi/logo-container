@@ -1,0 +1,20 @@
+# Persistent storage for LOGO! circuit programs, mounted at /home/logo/workspace.
+# This replaces the `./workspace` bind mount from docker-compose.yml.
+#
+# NOTE: adjust storageClassName to match your cluster. k0s commonly ships with
+# OpenEBS local-path ("openebs-hostpath") or you may use "local-path" from the
+# Rancher local-path-provisioner. Leave it unset to use the cluster default.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logo-workspace
+  namespace: logo-soft
+  labels:
+    app.kubernetes.io/name: logo-soft-comfort
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  # storageClassName: local-path

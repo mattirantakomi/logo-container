@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=LOGO! Soft Comfort
+Exec=/bin/bash -lc 'L=$(find ${LOGO_INSTALL_DIR:-/opt/LOGOSoftComfort} -type f -name LOGOComfort 2>/dev/null | head -n1); exec "$L"'
+Icon=applications-engineering
+Terminal=false
+Categories=Development;Engineering;

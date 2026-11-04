@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logo-soft
+  namespace: logo-soft
+  labels:
+    app.kubernetes.io/name: logo-soft-comfort
+spec:
+  # Single replica: this is a stateful interactive desktop session, not a
+  # horizontally scalable service. The PVC is RWO, so only one pod may mount it.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: logo-soft
+  template:
+    metadata:
+      labels:
+        app: logo-soft
+      annotations:
+        # XFCE's icon rendering needs an unconfined seccomp/apparmor profile,
+        # mirroring `seccomp=unconfined` / `apparmor=unconfined` from compose.
+        container.apparmor.security.beta.kubernetes.io/logo-soft: unconfined
+    spec:
+      imagePullSecrets:
+        # Remove this block if the GHCR package is public.
+        - name: ghcr-pull
+      securityContext:
+        seccompProfile:
+          type: Unconfined
+      containers:
+        - name: logo-soft
+          image: ghcr.io/mattirantakomi/logo-container:latest
+          imagePullPolicy: Always
+          securityContext:
+            capabilities:
+              # Needed for XFCE panel icon rendering (glycin/bubblewrap sandbox),
+              # mirroring `cap_add: [SYS_ADMIN]` from docker-compose.yml.
+              add: ["SYS_ADMIN"]
+          env:
+            - name: VNC_RESOLUTION
+              value: "1920x1080"
+            # - name: XPRA_PORT
+            #   value: "14500"
+          ports:
+            - name: vnc
+              containerPort: 5901
+            - name: novnc
+              containerPort: 6080
+            - name: xpra
+              containerPort: 14500
+          volumeMounts:
+            - name: workspace
+              mountPath: /home/logo/workspace
+            # Large shared memory for the GUI / Electron-free Java app, mirroring
+            # `shm_size: 2gb` from docker-compose.yml.
+            - name: dshm
+              mountPath: /dev/shm
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1536Mi"
+            limits:
+              cpu: "2"
+              memory: "3Gi"
+          readinessProbe:
+            tcpSocket:
+              port: 6080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 6080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+      volumes:
+        - name: workspace
+          persistentVolumeClaim:
+            claimName: logo-workspace
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 2Gi

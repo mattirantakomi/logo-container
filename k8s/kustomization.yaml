@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: logo-soft
+
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  # Uncomment to expose noVNC on your tailnet via the Tailscale operator:
+  # - service-tailscale.yaml
+
+# The GHCR pull secret (ghcr-pull) is intentionally NOT listed here because it
+# contains a credential. Create it out-of-band with `kubectl create secret
+# docker-registry` (see ghcr-pull-secret.example.yaml), or make the package
+# public and remove imagePullSecrets from deployment.yaml.
