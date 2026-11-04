@@ -1,5 +1,5 @@
 FROM ubuntu:26.04
-
+LABEL org.opencontainers.image.source https://github.com/mattirantakomi/logo-container
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies for LOGO! Soft Comfort, VNC, and a lightweight desktop
