@@ -31,7 +31,7 @@ spec:
           type: Unconfined
       containers:
         - name: logo-soft
-          image: ghcr.io/mattirantakomi/logo-container:latest
+          image: ghcr.io/mattirantakomi/logo-container:2026-11-04
           imagePullPolicy: Always
           securityContext:
             capabilities:
