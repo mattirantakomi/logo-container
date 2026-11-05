@@ -1,0 +1,19 @@
+# Keep the build context small and avoid leaking files into the image.
+
+# Siemens-licensed installer — it is bind-mounted at build time, never COPYed,
+# and must never be baked into an image layer or shared.
+Setup.bin
+
+# Version control and editor/IDE metadata
+.git
+.gitignore
+.vscode/
+.kiro/
+
+# Local runtime data that should not be part of the build context
+workspace/
+
+# Docs and CI that the image does not need
+README.md
+docker-compose.yml
+.dockerignore

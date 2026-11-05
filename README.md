@@ -170,3 +170,26 @@ If the installer used a different directory, set `LOGO_INSTALL_DIR` in
 - Taskbar at the top shows running windows (click to restore minimized apps)
 - Xpra runs on display `:2` separately from VNC (`:1`), so both can be used simultaneously
 - The LOGO! Soft Comfort install is baked into the image, so it persists without a mounted volume
+
+## License and Copyright
+
+This repository contains only the containerization tooling (Dockerfile, scripts,
+and configuration). These files are provided as-is for personal and educational
+use.
+
+**Siemens software is not included or redistributed by this repository.**
+
+LOGO! and LOGO! Soft Comfort are products and trademarks of Siemens AG. The
+LOGO! Soft Comfort 8.4 software (`Setup.bin`) is proprietary, copyrighted
+software owned by Siemens AG and is **not** distributed here — you must obtain
+it yourself from Siemens under their license terms. Your use of that software is
+governed solely by the Siemens license agreement that accompanies it.
+
+To keep the Siemens-licensed installer out of this repository and out of any
+built image, `Setup.bin` is listed in both `.gitignore` and `.dockerignore`, and
+the build bind-mounts it rather than copying it into an image layer. Do not
+commit, publish, or redistribute `Setup.bin` or any image containing the
+installed Siemens software.
+
+All other trademarks and product names are the property of their respective
+owners.
