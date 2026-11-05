@@ -1,6 +1,68 @@
-FROM ubuntu:26.04
-LABEL org.opencontainers.image.source https://github.com/mattirantakomi/logo-container
+# syntax=docker/dockerfile:1
+
+# =============================================================================
+# Stage 1: builder — runs the GUI installer headlessly to produce
+# /opt/LOGOSoftComfort. Everything here (Setup.bin, Xvfb, xdotool, apt caches)
+# stays in this stage and is discarded from the final image.
+# =============================================================================
+FROM ubuntu:26.04 AS builder
+
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LOGO_INSTALL_DIR=/opt/LOGOSoftComfort
+
+# The InstallAnywhere installer is a JavaFX GUI app, so the build stage needs an
+# X stack + window manager to drive it with Xvfb/xdotool.
+RUN apt-get update && apt-get install -y \
+    xvfb \
+    xdotool \
+    xfwm4 \
+    dbus-x11 \
+    libasound2t64 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libgtk2.0-0 \
+    libnspr4 \
+    libnss3 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    libxshmfence1 \
+    libxtst6 \
+    libxi6 \
+    libxrender1 \
+    libxext6 \
+    libfreetype6 \
+    libfontconfig1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY install-logo.sh /tmp/install-logo.sh
+# Bind-mount Setup.bin instead of COPY so the 1 GB binary never becomes a
+# persistent image layer. The installer needs an executable, writable copy, so
+# we copy it to a scratch path inside the same RUN and delete it afterwards;
+# nothing from this stage reaches the final image anyway. The installed result
+# is baked into /opt/LOGOSoftComfort.
+RUN --mount=type=bind,source=Setup.bin,target=/mnt/Setup.bin \
+    cp /mnt/Setup.bin /tmp/Setup.bin && \
+    chmod +x /tmp/install-logo.sh /tmp/Setup.bin && \
+    /tmp/install-logo.sh /tmp/Setup.bin && \
+    rm -f /tmp/Setup.bin /tmp/install-logo.sh
+
+# =============================================================================
+# Stage 2: runtime — only the packages needed to run the app, the VNC/noVNC/xpra
+# desktop, and the installed LOGO! Soft Comfort copied from the builder.
+# =============================================================================
+FROM ubuntu:26.04
+
+LABEL org.opencontainers.image.source=https://github.com/mattirantakomi/logo-container
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LOGO_INSTALL_DIR=/opt/LOGOSoftComfort
 
 # Install dependencies for LOGO! Soft Comfort, VNC, and a lightweight desktop
 RUN apt-get update && apt-get install -y \
@@ -89,29 +151,13 @@ RUN sed -i "s/UI.initSetting('autoconnect', false)/UI.initSetting('autoconnect',
     sed -i "s/UI.initSetting('reconnect_delay', 5000)/UI.initSetting('reconnect_delay', 1000)/" /usr/share/novnc/app/ui.js
 COPY novnc-index.html /usr/share/novnc/index.html
 
-# --- Install Siemens LOGO! Soft Comfort 8.4 ---------------------------------
-# Setup.bin is an InstallAnywhere installer that bundles its own JRE + JavaFX.
-# It does NOT support console or silent mode (both are rejected), so the GUI
-# installer is driven automatically on a virtual X display at build time by
-# install-logo.sh. The result is baked into /opt/LOGOSoftComfort.
-ENV LOGO_INSTALL_DIR=/opt/LOGOSoftComfort
-
-# Tools needed to run and automate the GUI installer headlessly
-RUN apt-get update && apt-get install -y \
-    xvfb \
-    xdotool \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-COPY Setup.bin /tmp/Setup.bin
-COPY install-logo.sh /tmp/install-logo.sh
-RUN chmod +x /tmp/install-logo.sh /tmp/Setup.bin && \
-    /tmp/install-logo.sh /tmp/Setup.bin && \
-    rm -f /tmp/Setup.bin /tmp/install-logo.sh
-
 # Create non-root user
 RUN useradd -m -s /bin/bash -G sudo logo \
-    && echo "logo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
-    && if [ -d "${LOGO_INSTALL_DIR}" ]; then chown -R logo:logo "${LOGO_INSTALL_DIR}"; fi
+    && echo "logo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Copy the installed LOGO! Soft Comfort from the builder stage, owned by logo.
+# This avoids both the 1 GB Setup.bin layer and the duplicate chown -R layer.
+COPY --from=builder --chown=logo:logo /opt/LOGOSoftComfort /opt/LOGOSoftComfort
 
 USER logo
 WORKDIR /home/logo
