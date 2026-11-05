@@ -40,6 +40,15 @@ Download the installer from Siemens:
 > downloading the Linux package, rename/place the installer as `Setup.bin` in
 > this directory.
 
+The downloaded package is named `lsc_v8_4_demo.zip`. The `Setup.bin` you need
+is inside it at:
+
+```
+lsc_v8_4_demo/lsc_v8_4_demo/Web_Installers/InstData/Linux64/VM/Setup.bin
+```
+
+Extract that file and place it in this directory as `Setup.bin`.
+
 > **Note:** `Setup.bin` is ~1 GB and bundles its own Java runtime.
 >
 > This InstallAnywhere installer does **not** support console or silent mode —
