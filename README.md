@@ -177,10 +177,11 @@ If the installer used a different directory, set `LOGO_INSTALL_DIR` in
 ## License and Copyright
 
 This repository contains only the containerization tooling (Dockerfile, scripts,
-and configuration). These files are provided as-is for personal and educational
-use.
+and configuration). That tooling is released under the **MIT License** (see the
+[`LICENSE`](LICENSE) file) — you are free to use, modify, and redistribute it.
 
-**Siemens software is not included or redistributed by this repository.**
+**Siemens software is not included or redistributed by this repository, and is
+not covered by the MIT License.**
 
 LOGO! and LOGO! Soft Comfort are products and trademarks of Siemens AG. The
 LOGO! Soft Comfort 8.4 software (`Setup.bin`) is proprietary, copyrighted
